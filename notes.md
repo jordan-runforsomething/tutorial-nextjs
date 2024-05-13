@@ -9,6 +9,7 @@
 - Generally, **layouts** define UI that is shared between multiple pages. Layout is component that takes `children` prop. When layout is in a directory, page in that directory automatically use it.
 - Next.js uses partial rendering so that on navigation the page components update but the layout doesn't re-render.
 - Use **Route Groups** with `/(overview)` on a route directory. In overview, but `page.tsx` and `loading.tsx` to prevent `loading.tsx` from applying to sub-routes. Can also use this to separate app into sections.
+- Create **Dynamic Route Segments** to match an ID or other data in a URL. Do this with `/invoices/[id]/edit/page.tsx` type route.
 
 ## Navigation
 - We navigate using `<Link>` element, which optimizes or client-side navigation and prevents doing full page refreshes.
@@ -79,6 +80,23 @@ There are two ways to stream:
 ### Partial Rendering
 NextJS 14 includes partial rendering. Static parts of the page are generated at buidl time (or revalidation). Dynamic components - wrapped in Suspense - ar eleft as holes in the static content and are automatically streamed in parallel to reduce load.
 
+## Mutating Data
+- **Server Actions** are async code run on server, eliminating need for API endpoints to mutate data. Can be invoked from Client or Server components.
+Pattern:
+```
+async function create(formData: FormData) {
+  const rawFormData = Object.fromEntries(formData.entries())
+return <form action={create}>...</form>;
+```
+
+To pass additional data to server action (that's not in form), we need to `bind` the function so that data is properly encoded. Could also use hidden fields, but then values are visible in HTML source.
+```
+const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+<form action={updateInvoiceWithId}>
+```
+
+- Use Zod to validate form data types
+- Need to clear client side cache for routes affected by data change. Do this with `revalidatPath`
 
 ## Concepts to not forget
 - Use <link> and <image> from NextJS library
@@ -88,3 +106,10 @@ NextJS 14 includes partial rendering. Static parts of the page are generated at 
 - Route Groups **NOT QUTE SURE HOW THESE WORK**
 - `use-debounce` library is a quick way to debounce a callback. But I guess lodash does this, too.
 - `useRouter` for client-side transitions
+
+## Error Handling
+- Use **`error.tsx`** to handle errors **at any route segment** for just that route segment.
+
+## Todo
+- Use Drizzle and TypeORM for invoice creation/update
+- Add loading state for creating or updating invoice
